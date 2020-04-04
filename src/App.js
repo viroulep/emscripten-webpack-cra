@@ -1,26 +1,46 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState } from 'react';
 import './App.css';
+// this just loads stuff
+import hello from './wasm/hello';
 
-function App() {
+const Loaded = ({ wasm }) => <button onClick={() => console.log(wasm.coucou(1,6))}>Click me</button>;
+
+const Unloaded = ({ loading, loadWasm }) => {
+  return loading ? (
+    <div>Loading...</div>
+  ) : (
+    <button onClick={loadWasm}>Load library</button>
+  );
+};
+
+const App = () => {
+  const [loading, setLoading] = useState(false);
+  const [wasm, setWasm] = useState(null);
+  const loadWasm = async () => {
+    try {
+      setLoading(true);
+      const wasm = hello({
+        onRuntimeInitialized: () => {
+          setWasm(wasm);
+        },
+        locateFile: () => require("./wasm/hello.wasm"),
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        {wasm ? (
+          <Loaded wasm={wasm} />
+        ) : (
+          <Unloaded loading={loading} loadWasm={loadWasm} />
+        )}
       </header>
     </div>
   );
-}
+};
 
 export default App;
