@@ -1,68 +1,56 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Minimal Working Example for C++ -> Wasm + Webpack + React
 
-## Available Scripts
+I struggled finding a working example for using some WebAssembly compiled with
+Emscripten in a basic Create React App (CRA).
+This repository is mainly for myself to have a working setup to refer to.
 
-In the project directory, you can run:
+This is based on a CRA application, so the first thing you want to do is most
+probably run `yarn install`.
 
-### `yarn start`
+## C++ sources
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+A very simple `hello.cpp` file is located in `wasm`, it defines a function `func`
+that performs an add over two integers, and output some text to stdout.
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+The code can be compiled to wasm by running `yarn build:wasm`.
+Make sure `em++` is in your `$PATH` (please refer to Emscripten doc).
+The command will emit the compiled files in `src/wasm` (`hello.js`, `hello.wasm`)
+where they will be required in our application.
 
-### `yarn test`
+I used `em++` version 1.39.11 at the time of writing this example.
+I've included some pre-built files in the `src/wasm` directory.
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## CRA setup
 
-### `yarn build`
+Just using CRA doesn't quite work, so I used [craco](https://github.com/gsoft-inc/craco)
+to override some of the basic configurations.
+Here are the few steps I needed to take and why:
+  - the js emitted by `em++` contains an importMeta. Because this is some kind
+of experimental syntax, I added the webpack plugin
+[`@open-wc/webpack-import-meta-loader`](https://www.npmjs.com/package/@open-wc/webpack-import-meta-loader)
+to take care of the import.
+  - the default EsLint configuration chokes on the js emitted by `em++`, I added
+an ignorePatterns rule to the default configuration, so that compilation succeeds.
+  - to make webpack properly handle wasm files, I added a custom rule to make it
+process wasm files through file-loader, with type `javascript/auto`.
+  - by default the js emitted by `em++` will use a locateFile function which is
+oblivious to any webpack settings. I solved this by overriding the `locateFile`
+function when loading the module in the app. By returning the result of a `require`
+function, the js wrapper is able to find the appropriate wasm file, as packed
+by webpack (see `src/App.js`).
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Running the thing
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+It's a standard CRA app, so using `yarn start` will work just fine.
+You can also try the "production" build using `yarn build`.
+In both cases it will try first to compile the `hello.cpp` file to WASM.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+I've added `serve` as a dev dependency, so running `yarn serve:build` should
+build the app and serve it.
 
-### `yarn eject`
+The default app's behavior is to show a button to load the wasm, when loaded
+clicking the button again should display "Hi there" and "7" in the console log.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `yarn build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+The small code in the app was very much inspired by
+[this blog post](https://prestonrichey.com/blog/react-rust-wasm/), which achieve
+something very similar to this repo, but using Rust instead of C++.

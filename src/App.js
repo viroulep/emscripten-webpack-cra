@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import './App.css';
-// this just loads stuff
+// this just loads stuff to load the wasm
 import hello from './wasm/hello';
 
-const Loaded = ({ wasm }) => <button onClick={() => console.log(wasm.coucou(1,6))}>Click me</button>;
+const Loaded = ({ wasm }) => <button onClick={() => console.log(wasm.func(1,6))}>Click me</button>;
 
 const Unloaded = ({ loading, loadWasm }) => {
   return loading ? (
@@ -23,6 +23,7 @@ const App = () => {
         onRuntimeInitialized: () => {
           setWasm(wasm);
         },
+        // This overrides the default path used by the wasm/hello.js wrapper
         locateFile: () => require("./wasm/hello.wasm"),
       });
     } finally {
