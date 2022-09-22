@@ -3,9 +3,9 @@ import './App.css';
 // this just loads stuff to load the wasm
 import hello from './wasm/hello';
 
-const action = (wasm) => {
+const action = (wasm, setStuff) => {
   // Try a simple function call
-  console.log(wasm.myadd(1, 2));
+  const add = wasm.myadd(1, 2);
   const vectorOfPoints = new wasm.VectorPoint();
   // Push a couple of points:
   vectorOfPoints.push_back({ x: 1, y: 2 });
@@ -13,13 +13,32 @@ const action = (wasm) => {
   // Accumulate them
   const { x, y } = wasm.accumulatePoints(vectorOfPoints);
   if (x === 5 && y === 7) {
-    console.log("Accumulation worked");
+    setStuff({ add, text: "Accumulation worked" });
   } else {
-    console.log("Accumulation did not work");
+    setStuff({ add, text: "Accumulation did not work" });
   }
 };
 
-const Loaded = ({ wasm }) => <button onClick={() => action(wasm)}>Click me</button>;
+const Loaded = ({ wasm }) => {
+  const [stuff, setStuff] = useState(null);
+  return (
+    <>
+      <button onClick={() => action(wasm, setStuff)}>Click me</button>
+      {stuff ? (
+        <>
+          <div>
+            1 + 2 =
+            {' '}
+            {stuff.add}
+          </div>
+          <div>{stuff.text}</div>
+        </>
+      ) : (
+        <div>click the button</div>
+      )}
+    </>
+  );
+};
 
 const Unloaded = ({ loading, loadWasm }) => {
   return loading ? (

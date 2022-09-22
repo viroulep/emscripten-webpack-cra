@@ -54,8 +54,8 @@ I've added `serve` as a dev dependency, so running `yarn serve:build` should
 build the app and serve it.
 
 The default app's behavior is to show a button to load the wasm, when loaded
-clicking the button again should display "Hi there", then "3",
-then "Accumulation worked" in the console log.
+clicking the button again should display "Hi there" in the console log,
+and should display a text with "1 + 2 = 3, Accumulation worked".
 
 Although the example has changed quite a bit, it should be mentioned that all
 this was initially very much inspired by
