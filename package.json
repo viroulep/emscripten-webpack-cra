@@ -1,29 +1,32 @@
 {
   "name": "test-webassembly",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "private": true,
   "dependencies": {
-    "@craco/craco": "^5.6.4",
-    "@open-wc/webpack-import-meta-loader": "^0.4.4",
-    "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.3.2",
-    "@testing-library/user-event": "^7.1.2",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "react-scripts": "3.4.1"
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^13.0.0",
+    "@testing-library/user-event": "^13.2.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "web-vitals": "^2.1.0"
   },
   "scripts": {
-    "build:wasm": "em++ --bind -s EXPORT_ES6=1 -s MODULARIZE=1 -o src/wasm/hello.js ./wasm/hello.cpp",
+    "build:wasm": "em++ -lembind -s USE_ES6_IMPORT_META=0 -o src/wasm/hello.mjs ./wasm/hello.cpp",
     "prestart": "yarn build:wasm",
-    "start": "craco start",
+    "start": "react-scripts start",
     "prebuild": "yarn build:wasm",
-    "build": "craco build",
-    "test": "craco test",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
     "eject": "react-scripts eject",
     "serve:build": "yarn build && yarn serve -s build"
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ],
+    "ignorePatterns": ["src/wasm/hello.mjs"]
   },
   "browserslist": {
     "production": [
@@ -38,6 +41,6 @@
     ]
   },
   "devDependencies": {
-    "serve": "^11.3.0"
+    "serve": "^14.0.1"
   }
 }
